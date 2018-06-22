@@ -14,6 +14,10 @@ class Board:
         self.midTurn = False
         # Current player will be either 0 (no one's turn) or 1 or 2
         self.currentPlayer = 0
+        self.playerOneWins = 0
+        self.playerTwoWins = 0
+        self.fullValues = []
+        self.midTurnValues = []
 
     def reset(self):
         # Make the board 0 on playable area
@@ -24,23 +28,29 @@ class Board:
                         self.boardMatrix[x, y, z] = 0
 
     def move_player(self, value, player):
+        # Checks for legality before play
         if self.legal_move(value, player):
-            # Modify mid turn variables
-            self.midTurn = True
-            self.currentPlayer = player
-            # Set the correct indices
-            z = player - 1
-            x = value - 2
-            y = self.player_mid_turn_position(player, value)    # Mid turn position also gives solid position
-            # If they haven't made progress, start them
-            if y == -1:
-                self.boardMatrix[x, index_function(x), z] = 2
+            self.move_player_legal_move(value, player)
+
+    def move_player_legal_move(self, value, player):
+        # Assumes the move is legal
+        # Modify mid turn variables
+        self.midTurnValues.append(value)
+        self.midTurn = True
+        self.currentPlayer = player
+        # Set the correct indices
+        z = player - 1
+        x = value - 2
+        y = self.player_mid_turn_position(player, value)  # Mid turn position also gives solid position
+        # If they haven't made progress, start them
+        if y == -1:
+            self.boardMatrix[x, index_function(x), z] = 2
+        else:
+            if self.player_mid_turn_position(player, value) == self.player_solid_position(player, value):
+                self.boardMatrix[x, y + 1, z] = 2
             else:
-                if self.player_mid_turn_position(player, value) == self.player_solid_position(player, value):
-                    self.boardMatrix[x, y+1, z] = 2
-                else:
-                    self.boardMatrix[x, y, z] = 0
-                    self.boardMatrix[x, y+1, z] = 2
+                self.boardMatrix[x, y, z] = 0
+                self.boardMatrix[x, y + 1, z] = 2
 
     def legal_move(self, value, player):
         # Did someone already win?
@@ -66,12 +76,16 @@ class Board:
                     counter += 1
         # If all the caps are filled but the value isn't one of the caps, illegal
         if counter == 3 and not(value - 2 in list_of_caps):
-            print("Hello illegal being")
             return False
 
         # If no illegal moves, return true
-        print("Yay legal")
         return True
+
+    def get_active_values(self):
+        return self.midTurnValues
+
+    def get_current_player(self):
+        return self.currentPlayer
 
     def check_column(self, value):
         # Value is actual value, not index
@@ -86,6 +100,9 @@ class Board:
             # Still an empty column
             return 0
 
+    def return_full_values(self):
+        return self.fullValues
+
     def check_overlaps(self):
         # Returns true or false only
         for x in range(11):
@@ -97,20 +114,7 @@ class Board:
         return False
 
     def check_game_over(self):
-        # Wins is a list of who won which column
-        wins = [self.check_column(2), self.check_column(3), self.check_column(4), self.check_column(5),
-                self.check_column(6), self.check_column(7), self.check_column(8), self.check_column(9),
-                self.check_column(10), self.check_column(11), self.check_column(12)]
-        p1wins = 0
-        p2wins = 0
-
-        for i in wins:
-            if i == 1:
-                p1wins += 1
-            elif i == 2:
-                p2wins += 1
-
-        if p1wins == 3 or p2wins == 3:
+        if self.playerOneWins == 3 or self.playerTwoWins == 3:
             return True
         else:
             return False
@@ -120,33 +124,39 @@ class Board:
         # under legal circumstances, basically.
         # Save is a boolean
         if not self.check_overlaps():
-            self.midTurn = False
-            self.currentPlayer = 0
-            z = player - 1
-            # x is the value - 2
-            for x in range(11):
-                value = x + 2
-                if self.player_solid_position(player, value) != self.player_mid_turn_position(player, value):
-                    # print("I'm in the 'not equal to each other' thing")
-                    if save:
-                        if self.player_solid_position(player, value) != -1:
-                            self.boardMatrix[x, self.player_solid_position(player, value), z] = 0
-                        self.boardMatrix[x, self.player_mid_turn_position(player, value), z] = 1
-                        # If the player won this turn, remove the other player's progress
-                        if self.check_column(x + 2) == player:
-                            # If player 1 won, remove player two's progress
-                            if player == 1:
-                                other_player = self.player_solid_position(2, value)
-                                # If they made no progress at all, don't do anything
-                                if other_player != -1:
-                                    self.boardMatrix[x][other_player][1] = 0
-                            # If player 2 won, remove player one's progress
-                            else:
-                                other_player = self.player_solid_position(1, value)
-                                if other_player != -1:
-                                    self.boardMatrix[x, other_player, 0] = 0
-                    else:
-                        self.boardMatrix[x, self.player_mid_turn_position(player, value), z] = 0
+            self.end_turn_assumed_legal(player, save)
+
+    def end_turn_assumed_legal(self, player, save):
+        self.midTurn = False
+        self.midTurnValues = []
+        self.currentPlayer = 0
+        z = player - 1
+        # x is the value - 2
+        for x in range(11):
+            value = x + 2
+            if self.player_solid_position(player, value) != self.player_mid_turn_position(player, value):
+                if save:
+                    if self.player_solid_position(player, value) != -1:
+                        self.boardMatrix[x, self.player_solid_position(player, value), z] = 0
+                    self.boardMatrix[x, self.player_mid_turn_position(player, value), z] = 1
+                    # If the player won this turn, remove the other player's progress
+                    if self.check_column(x + 2) == player:
+                        self.fullValues.append(x + 2)
+                        # If player 1 won, remove player two's progress
+                        if player == 1:
+                            self.playerOneWins += 1
+                            other_player = self.player_solid_position(2, value)
+                            # If they made no progress at all, don't do anything
+                            if other_player != -1:
+                                self.boardMatrix[x][other_player][1] = 0
+                        # If player 2 won, remove player one's progress
+                        else:
+                            self.playerTwoWins += 1
+                            other_player = self.player_solid_position(1, value)
+                            if other_player != -1:
+                                self.boardMatrix[x, other_player, 0] = 0
+                else:
+                    self.boardMatrix[x, self.player_mid_turn_position(player, value), z] = 0
 
     def player_solid_position(self, player, value):
         # Value and player are both not indices
@@ -170,8 +180,38 @@ class Board:
                 return y
         return self.player_solid_position(player, value)
 
+    def return_nn_matrix(self):
+        nnmatrix = np.ones([11, 4])
+        for x in range(11):
+            playeronesolid = self.player_solid_position(1, x + 2)
+            if playeronesolid == -1:
+                playeronemid = self.player_mid_turn_position(1, x + 2)
+                if playeronemid == -1:
+                    nnmatrix[x, 0] = 0
+                else:
+                    nnmatrix[x, 0] = playeronemid - index_function(x) + 1
+                nnmatrix[x, 1] = 12 - index_function(x) + 1
+            else:
+                nnmatrix[x, 0] = self.player_mid_turn_position(1, x + 2) - playeronesolid
+                nnmatrix[x, 1] = 12 - playeronesolid
+
+            playertwosolid = self.player_solid_position(2, x + 2)
+            if playertwosolid == -1:
+                playertwomid = self.player_mid_turn_position(2, x + 2)
+                if playertwomid == -1:
+                    nnmatrix[x, 2] = 0
+                else:
+                    nnmatrix[x, 2] = self.player_mid_turn_position(2, x + 2) - index_function(x) + 1
+                nnmatrix[x, 3] = 12 - index_function(x) + 1
+            else:
+                nnmatrix[x, 2] = self.player_mid_turn_position(2, x + 2) - playertwosolid
+                nnmatrix[x, 3] = 12 - playertwosolid
+        return nnmatrix
+
     def return_pure_matrix(self):
         return self.boardMatrix
 
     def aha(self):
-        print(self.boardMatrix)
+        print(self.boardMatrix[:, :, 0])
+        print()
+        print(self.boardMatrix[:, :, 1])
