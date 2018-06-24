@@ -26,6 +26,14 @@ class Board:
                 for y in range(13):
                     if y >= index_function(x):
                         self.boardMatrix[x, y, z] = 0
+                        # Variables to signify who's turn it is
+        self.midTurn = False
+        # Current player will be either 0 (no one's turn) or 1 or 2
+        self.currentPlayer = 0
+        self.playerOneWins = 0
+        self.playerTwoWins = 0
+        self.fullValues = []
+        self.midTurnValues = []
 
     def move_player(self, value, player):
         # Checks for legality before play
@@ -35,7 +43,8 @@ class Board:
     def move_player_legal_move(self, value, player):
         # Assumes the move is legal
         # Modify mid turn variables
-        self.midTurnValues.append(value)
+        if not (value in self.midTurnValues):
+            self.midTurnValues.append(value)
         self.midTurn = True
         self.currentPlayer = player
         # Set the correct indices
@@ -55,6 +64,9 @@ class Board:
     def legal_move(self, value, player):
         # Did someone already win?
         if self.check_game_over():
+            return False
+        # Is the value within the appropriate range?
+        if not (value in range(2, 13)):
             return False
         # Did someone win the column?
         if self.check_column(value) > 0:
@@ -208,10 +220,37 @@ class Board:
                 nnmatrix[x, 3] = 12 - playertwosolid
         return nnmatrix
 
+    def readable_matrix(self, player):
+        z = player - 1
+        # for 2: #
+        mat = np.ones([13, 11]) * -1
+        start = 5  # starting index for row of readable
+        end = 7  # ending index for row of readable
+        startBoard = 10  # starting index for col of original
+        endBoard = 12  # ending index for col of original
+        col = 0  # col of readable
+        other_half = 10  # this is the corresponding col for the right half of the readable
+        other_original_half = 10  # this is the corresponding row for the bottom half of the original
+        while (start >= 0):
+            for x in range(start, end + 1):
+                for y in range(startBoard, endBoard + 1):
+                    mat[x, col] = self.boardMatrix[col + 1, y, z]
+                    mat[x, 10 - col] = self.boardMatrix[other_half, other_original_half, z]
+            start -= 1
+            end += 1
+            startBoard -= 2
+            col += 1
+            other_half -= 1
+            other_original_half -= 2
+        return mat
+
     def return_pure_matrix(self):
         return self.boardMatrix
 
     def aha(self):
+        # print(self.readable_matrix(1))
+        # print()
+        # print(self.readable_matrix(2))
         print(self.boardMatrix[:, :, 0])
         print()
         print(self.boardMatrix[:, :, 1])
