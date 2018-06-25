@@ -21,7 +21,8 @@ def generate_moves(board, roll): # value = index + 2
     if sum02 != sum01 and sum02 != roll_sum - sum01:
         valid_moves.append([sum02, roll_sum - sum02])
     sum03 = roll[0] + roll[3]
-    if sum03 != sum01 and sum03 != roll_sum - sum01 and sum03 != sum02 and sum03 != roll_sum - sum02:
+    if sum03 != sum01 and sum03 != roll_sum - sum01 and \
+       sum03 != sum02 and sum03 != roll_sum - sum02:
         valid_moves.append([sum03, roll_sum - sum03])
     i = 0
     while i < len(valid_moves):
@@ -38,9 +39,10 @@ def generate_moves(board, roll): # value = index + 2
         if len(valid_moves[i]) == 2 and valid_moves[i][0] == valid_moves[i][1]: # Double move
             row = valid_moves[i][0]
             if row in active_values or len(active_values) < 3:
-                if board.get_absolute_matrix()[row - 2, 2 * current_player - 1] == 1: # If spaces left == 1
+                if board.get_nn_matrix()[row - 2, 2 * current_player - 1] == 1: # If spaces left == 1
                     valid_moves[i].pop(0) # Remove one of them
-        elif len(active_values) == 2 and valid_moves[i][0] not in active_values and valid_moves[i][1] not in active_values:
+        elif len(active_values) == 2 and \
+             valid_moves[i][0] not in active_values and valid_moves[i][1] not in active_values:
             valid_moves.append([valid_moves[i].pop(1)]) # Splits up combination into 2
         j = 0
         while j < len(valid_moves[i]):
