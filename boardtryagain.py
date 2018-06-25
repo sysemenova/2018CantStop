@@ -22,7 +22,7 @@ class Board:
         self.reset()
 
     def reset_nn_matrix(self):
-        self.nnMatrix[:, 1] = index_function(np.arange(11)) - 1
+        self.nnMatrix[:, 1] = 12 - (index_function(np.arange(11)) - 1)
         self.nnMatrix[:, 3] = self.nnMatrix[:, 1]
         self.nnMatrix[:, 0] = 0
         self.nnMatrix[:, 2] = 0
@@ -99,9 +99,8 @@ class Board:
         # A neural network try
         for value in self.midTurnValues:
             x = value - 2
-            if (self.nnMatrix[x, 0] + self.nnMatrix[x, 1]) == (self.nnMatrix[x, 2] + self.nnMatrix[x, 3]):
+            if (self.nnMatrix[x, 0] + (12 - self.nnMatrix[x, 1])) == (self.nnMatrix[x, 2] + (12 - self.nnMatrix[x, 3])):
                 return True
-
         return False
 
     def check_game_over(self):
@@ -125,8 +124,13 @@ class Board:
         if not save:
             self.nnMatrix[:, (player - 1) * 2] = 0
         else:
-            self.nnMatrix[:, (player - 1) * 2 + 1] = self.nnMatrix[:, (player - 1) * 2 + 1] + self.nnMatrix[:, (player - 1) * 2]
+            self.nnMatrix[:, (player - 1) * 2 + 1] = self.nnMatrix[:, (player - 1) * 2 + 1] - self.nnMatrix[:, (player - 1) * 2]
             self.nnMatrix[:, (player - 1) * 2] = 0
+
+        for x in range(11):
+            value = x + 2
+            if self.check_column(value) > 0 and not(value in self.fullValues):
+                self.fullValues.append(value)
 
     def player_solid_position(self, player, value):
         # A neural network try
