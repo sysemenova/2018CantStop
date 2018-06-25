@@ -65,7 +65,7 @@ class Board:
         if self.currentPlayer != player and self.currentPlayer != 0:
             return False
         # Is current player already at the end?
-        if self.player_mid_turn_position(player, value) == 12:
+        if self.player_mid_turn_position(player, value) == 0:
             return False
         # If all the caps are filled but the value isn't one of the caps, illegal
         if len(self.midTurnValues) == 3 and not(value in self.midTurnValues):
@@ -144,7 +144,7 @@ class Board:
         # A neural network try
         x = value - 2
         y = (player - 1) * 2
-        value_to_return = self.nnMatrix[x, y] + self.nnMatrix[x, y + 1]
+        value_to_return = self.nnMatrix[x, y] - self.nnMatrix[x, y + 1]
 
         return value_to_return
 
