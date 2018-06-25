@@ -1,11 +1,17 @@
-from sympy.utilities.iterables import multiset_permutations
 import numpy as np
 
 def roll_dice():
     return np.random.randint(1, high=7, size=4)
 
 def generate_moves(board, roll): # value = index + 2
-    #print(roll)
+    """
+    Given the current boardstate and the results from a roll,
+    this function generates the possible combinations of moves.
+    If the roll is something like [1, 3, 4, 5], an output could be
+    [[4, 9], [5, 8], [6, 7]], but depending on the boardstate, it could be
+    [[4, 9], [7]] if only 4, 7, and 9 are valid moves.
+    If no moves are valid, the function will return None.
+    """
     roll_sum = sum(roll)
     valid_moves = []
     sum01 = roll[0] + roll[1]
@@ -45,8 +51,8 @@ def generate_moves(board, roll): # value = index + 2
                 valid_moves[i].pop(j)
             else:
                 j += 1
-        #get_active_values()
-        #get_current_player() # 1 or 2
-            
-            
+        if len(valid_moves[i]) == 0:
+            valid_moves.pop(i)           
+    if len(valid_moves) == 0:
+        return None
     return valid_moves
