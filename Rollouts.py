@@ -23,7 +23,6 @@ def generate_moves(board, roll): # value = index + 2
     sum03 = roll[0] + roll[3]
     if sum03 != sum01 and sum03 != roll_sum - sum01 and sum03 != sum02 and sum03 != roll_sum - sum02:
         valid_moves.append([sum03, roll_sum - sum03])
-    #print(valid_moves)
     i = 0
     while i < len(valid_moves):
         """
