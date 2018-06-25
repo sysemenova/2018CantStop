@@ -9,7 +9,6 @@ def index_function(i):
 class Board:
     def __init__(self):
         self.boardMatrix = np.ones([11, 13, 2]) * -1
-        self.reset()
         # Variables to signify who's turn it is
         self.midTurn = False
         # Current player will be either 0 (no one's turn) or 1 or 2
@@ -18,6 +17,8 @@ class Board:
         self.playerTwoWins = 0
         self.fullValues = []
         self.midTurnValues = []
+
+        self.reset()
 
     def reset(self):
         # Make the board 0 on playable area

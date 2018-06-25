@@ -3,7 +3,7 @@ import random
 
 
 def roll_die():
-    return random.randint(1, 7)
+    return random.randint(1, 6)
 
 
 one_id = input("Is player one a computer? [y/n] ")
@@ -18,14 +18,16 @@ if two_id == "y":
 else:
     two_id = False
 
-if not one_id or not two_id:
+any_humans = not one_id or not two_id
+
+if any_humans:
     print()
     print("Note: order of dice rolls matter!")
     print("If you have two caps on the board and neither of the two rolls")
     print("are existing caps, then ONLY THE FIRST WILL COUNT!")
     print()
     print("Also, it's your fault if the program crashes. There aren't any input checks.")
-    print("You have been warned.")
+    print("You have been warned.\t:)")
     print()
     input("Press enter to continue: ")
 
@@ -93,7 +95,8 @@ for i in range(times_to_play):
                 to_continue = False
 
         turn = not turn
-    print()
-    print()
-    print()
-    input("Game is over!")
+    if any_humans:
+        print()
+        print()
+        print()
+        input("Game is over!")
