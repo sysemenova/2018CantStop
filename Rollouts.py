@@ -1,3 +1,4 @@
+from .CantStopBoard import *
 import numpy as np
 
 def roll_dice():
@@ -34,9 +35,9 @@ def generate_moves(board, roll): # value = index + 2
                  Note: If 2 placed, may need to split up a combination
                        into 2
         """
-        active_values = board.get_active_values()
-        current_player = board.get_current_player()
-        boardstate = board.get_nn_matrix()
+        active_values = board.midTurnValues
+        current_player = board.currentPlayer
+        boardstate = board.nnMatrix
         if len(valid_moves[i]) == 2 and valid_moves[i][0] == valid_moves[i][1]: # Double move
             row = valid_moves[i][0]
             if row in active_values or len(active_values) < 3:
@@ -47,7 +48,7 @@ def generate_moves(board, roll): # value = index + 2
             valid_moves.append([valid_moves[i].pop(1)]) # Splits up combination into 2
         j = 0
         while j < len(valid_moves[i]):
-            if valid_moves[i][j] in board.get_full_values() or \
+            if valid_moves[i][j] in board.fullValues or \
             boardstate[valid_moves[i][j] - 2, 2 * current_player - 1] - boardstate[valid_moves[i][j] - 2, 2 * current_player - 2] == 0: # Row completed
                 valid_moves[i].pop(j)
             elif len(active_values) == 3 and valid_moves[i][j] not in active_values: # 3 white pieces already placed
@@ -55,7 +56,9 @@ def generate_moves(board, roll): # value = index + 2
             else:
                 j += 1
         if len(valid_moves[i]) == 0:
-            valid_moves.pop(i)           
+            valid_moves.pop(i)
+        else:
+            i += 1
     if len(valid_moves) == 0:
         return None
     return valid_moves
