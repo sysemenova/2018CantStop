@@ -1,3 +1,4 @@
+import Rollouts
 import CantStopBoard
 import random
 import numpy as np
@@ -70,26 +71,25 @@ for i in range(times_to_play):
                 print("CURRENT PLAYER:", player)
                 print("MID TURN VALUES:", b.midTurnValues)
                 print()
-                lor = [roll_die(), roll_die(), roll_die(), roll_die()]      # list_of_rolls
+                lor = Rollouts.roll_dice()      # list_of_rolls
                 print("Here are your rolls:")
                 print("\t", lor)
-                options = [[lor[0] + lor[1], lor[2] + lor[3]], [lor[2] + lor[3], lor[0] + lor[1]],
-                           [lor[0] + lor[2], lor[1] + lor[3]], [lor[1] + lor[3], lor[0] + lor[2]],
-                           [lor[0] + lor[3], lor[1] + lor[2]], [lor[1] + lor[2], lor[0] + lor[3]]]
-                print("Here are your options:")
-                print("\t", options)
-                print()
-                user_choice = int(input("Which option will you choose? [1/2/3/4/5/6] "))
-                o_index = user_choice - 1
-                if b.legal_move(options[o_index][0], player) or b.legal_move(options[o_index][1], player):
-                    b.move_player(options[o_index][0], player)
-                    b.move_player(options[o_index][1], player)
-                    b.aha()
-                else:
+                options = Rollouts.generate_moves(b, lor, player)
+                if(options is None):
                     print()
                     input("Sorry, you lose your progress.")
                     to_continue = False
                     b.end_turn_assumed_legal(player, False)
+                else:
+                    print("Here are your options:")
+                    print("\t", options)
+                    print()
+                    user_choice = int(input("Which option number will you choose? "))
+                    o_index = user_choice - 1
+                    b.move_player(options[o_index][0], player)
+                    if(len(options[o_index]) == 2):
+                        b.move_player(options[o_index][1], player)
+                    b.aha()
                 ###
                 print()
                 if to_continue:

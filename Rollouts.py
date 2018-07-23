@@ -1,10 +1,10 @@
-from .CantStopBoard import *
+from CantStopBoard import *
 import numpy as np
 
 def roll_dice():
     return np.random.randint(1, high=7, size=4)
 
-def generate_moves(board, roll): # value = index + 2
+def generate_moves(board, roll, player): # value = index + 2
     """
     Given the current boardstate and the results from a roll,
     this function generates the possible combinations of moves.
@@ -36,20 +36,20 @@ def generate_moves(board, roll): # value = index + 2
                        into 2
         """
         active_values = board.midTurnValues
-        current_player = board.currentPlayer
         boardstate = board.nnMatrix
+        print("valid_moves so far:", valid_moves)
         if len(valid_moves[i]) == 2 and valid_moves[i][0] == valid_moves[i][1]: # Double move
             row = valid_moves[i][0]
             if row in active_values or len(active_values) < 3:
-                if  boardstate[row - 2, 2 * current_player - 1] - boardstate[row - 2, 2 * current_player - 2] == 1: # If spaces left == 1
+                if  boardstate[row - 2, 2 * player - 1] - boardstate[row - 2, 2 * player - 2] == 1: # If spaces left == 1
                     valid_moves[i].pop(0) # Remove one of them
-        elif len(active_values) == 2 and \
+        elif len(active_values) == 2 and len(valid_moves[i]) == 2 and \
              valid_moves[i][0] not in active_values and valid_moves[i][1] not in active_values:
             valid_moves.append([valid_moves[i].pop(1)]) # Splits up combination into 2
         j = 0
         while j < len(valid_moves[i]):
             if valid_moves[i][j] in board.fullValues or \
-            boardstate[valid_moves[i][j] - 2, 2 * current_player - 1] - boardstate[valid_moves[i][j] - 2, 2 * current_player - 2] == 0: # Row completed
+            boardstate[valid_moves[i][j] - 2, 2 * player - 1] - boardstate[valid_moves[i][j] - 2, 2 * player - 2] == 0: # Row completed
                 valid_moves[i].pop(j)
             elif len(active_values) == 3 and valid_moves[i][j] not in active_values: # 3 white pieces already placed
                 valid_moves[i].pop(j)
