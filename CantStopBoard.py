@@ -131,6 +131,19 @@ class Board:
             value = x + 2
             if self.check_column(value) > 0 and not(value in self.fullValues):
                 self.fullValues.append(value)
+                if player == 1:
+                    self.playerOneWins += 1
+                else:
+                    self.playerTwoWins += 1
+
+    def hypo_end_turn(self, player, save):
+        hypomatrix = self.nnMatrix.copy()
+        if not save:
+            hypomatrix[:, (player - 1) * 2] = 0
+        else:
+            hypomatrix[:, (player - 1) * 2 + 1] = hypomatrix[:, (player - 1) * 2 + 1] - hypomatrix[:, (player - 1) * 2]
+            hypomatrix[:, (player - 1) * 2] = 0
+        return hypomatrix
 
     def player_solid_position(self, player, value):
         # A neural network try
@@ -209,6 +222,4 @@ class Board:
         return self.nnMatrix
 
     def aha(self):
-        print(self.readable_matrix(1))
-        print()
-        print(self.readable_matrix(2))
+        print(self.nnMatrix)

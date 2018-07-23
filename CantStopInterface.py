@@ -1,5 +1,6 @@
 import CantStopBoard
 import random
+import numpy as np
 
 
 def roll_die():
@@ -17,6 +18,19 @@ if two_id == "y":
     two_id = True
 else:
     two_id = False
+
+save_id = input("Do you wish to save data? [y/n] ")
+if save_id == "y":
+    save_id = True
+    y_v = np.ones(2) * 4
+    y_v[0] = 1
+    y_counter = False
+    save_name = input("What do you want to call the file (include .txt)? ")
+    f = open(save_name, 'w')
+    y_save_name = input("What do you want to call the y file (include .txt)? ")
+    yf = open(y_save_name, 'w')
+else:
+    save_id = False
 
 any_humans = not one_id or not two_id
 
@@ -94,9 +108,38 @@ for i in range(times_to_play):
                 input("Sorry, we don't have functionality for computers yet. Check back later.")
                 to_continue = False
 
+            # Here is the code for putting stuff into a text file
+            if save_id:
+                m = b.nnMatrix.copy()
+                if player == 2:
+                    n = b.nnMatrix.copy()
+                    m[:, :2] = n[:, 2:]
+                    m[:, 2:] = n[:, :2]
+                m = m.reshape(44)
+                # b = np.array2string(a)
+                s = np.array2string(m, max_line_width=1000)
+                print(s)
+                f.write(s + "\n")
+                if y_counter:
+                    # Code for appending player's stuff
+                    q = np.array([player, 4])
+                    y_v = np.vstack((y_v, q))
+                else:
+                    y_counter = True    # Meaning it's the first turn and it already did stuff
         turn = not turn
     if any_humans:
         print()
         print()
         print()
         input("Game is over!")
+    if save_id:
+        if b.playerOneWins == 3:
+            winner = 1
+        else:
+            winner = 2
+        y = (y_v[:, 0] == winner)
+        s = np.array2string(y)
+        yf.write(s)
+
+        f.close()
+        yf.close()
